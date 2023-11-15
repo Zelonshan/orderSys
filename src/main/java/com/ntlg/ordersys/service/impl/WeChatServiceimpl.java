@@ -16,9 +16,9 @@ public class WeChatServiceimpl implements WeChatService {
         String res;
         Map<String,String> data = new HashMap<String, String>();
         //小程序的appid
-        data.put("appid", "wx9ae53db5e3301a87");
+        data.put("appid", "#############");
         //小程序的appsecret
-        data.put("secret", "f99edda7f6ddf3ed506776c557d6f48b");
+        data.put("secret", "#############");
         data.put("js_code", code);
         data.put("grant_type", "authorization_code");
         String response = HttpRequest.get("https://api.weixin.qq.com/sns/jscode2session").form(data).body();
