@@ -1,0 +1,42 @@
+spring:
+  # 数据源，连接MySQL数据库
+  datasource:
+    url: jdbc:mysql://localhost:3306/orders?serverTimezone=UTC&useSSL=false
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  # JPA配置，打印sql语句
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  # mvc配置，映射html页面
+  mvc:
+    static-path-pattern: /**
+    view:
+      prefix: /
+      suffix: .html
+  # thymeleaf模板引擎配置，设置编码，false取消缓存
+  thymeleaf:
+    encoding: UTF-8
+    cache: false
+    mode: HTML
+  neo4j:
+    security:
+      cert-file:
+  servlet:
+    multipart:
+      #上传最大文件大小。值可以使用后缀”MB“或者”KB“。指示兆字节或千字节大小
+      max-file-size: 100MB
+      #最大请求大小也可以是mb也可以是kb
+      max-request-size: 100MB
+server:
+  # 修改启动端口号
+  port: 8080
+  # 静态资源映射路径
+  web:
+    resources:
+      static-locations: classpath:/static/
+  servlet:
+    context-path: /

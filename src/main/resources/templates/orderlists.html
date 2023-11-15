@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<!--suppress ALL-->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="author" content="Yuan-Programmer" />
+
+		<title>后台管理</title>
+		<link rel="shortcut icon" href="../static/favicon.ico">
+		<link href="/static/css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+		<link href="/static/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+		<link href="/static/css/plugins/iCheck/custom.css" rel="stylesheet">
+		<link href="/static/css/animate.min.css" rel="stylesheet">
+		<link href="/static/css/style.min862f.css?v=4.1.0" rel="stylesheet">
+
+	</head>
+	<body class="gray-bg">
+		<div class="wrapper wrapper-content animated fadeInRight">
+			<div class="row">
+				<div class="col-sm-6">
+					<div class="ibox float-e-margins">
+						<div class="ibox-title">
+							<h5>制作列表</h5>
+							<div class="ibox-tools">
+								<button id="addUserBtn" class="btn btn-xs btn-rounded btn-primary"><i class="fa fa-plus"></i> 添加</button>
+							</div>
+						</div>
+						<div class="ibox-content">
+							<div class="input-group">
+							    <input id="search" type="text" placeholder="请输入关键词" class="input-sm form-control"> <span class="input-group-btn">
+							        <button id="findBtn" type="button" class="btn btn-sm btn-primary"><i class="fa fa-search"> 搜索</i> </button> </span>
+							</div>
+							<div id="orderlistTable" th:fragment="orderlistTable">
+								<table class="footable table table-stripped toggle-arrow-tiny">
+									<thead>
+										<tr>
+											<th>桌号</th>
+											<th>订单时间</th>
+											<th>菜单</th>
+											<th>状态</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="orderlist: ${orderlist_list}">
+											<td th:text="${orderlist.foodorders.meunnumber}">1</td>
+											<td th:text="${#dates.format(orderlist.foodorders.ordertime,'yyyy-MM-dd HH:mm:ss')}">ydw</td>
+											<td th:each="order:${orderlist.list}">
+												<p th:text="${order.name}"></p>
+												<p th:text="${order.quantity}"></p>
+											</td>
+											<td th:switch="${orderlist.foodorders.taken}">
+												<p th:case="'0'">制作中</p>
+												<p th:case="'1'">上桌</p>
+												<p th:case="'2'">支付完毕</p>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="/static/js/jquery.min.js?v=2.1.4"></script>
+		<script src="/static/js/bootstrap.min.js?v=3.3.6"></script>
+		<script src="/static/js/plugins/peity/jquery.peity.min.js"></script>
+		<script src="/static/js/content.min.js?v=1.0.0"></script>
+		<script src="/static/js/plugins/iCheck/icheck.min.js"></script>
+		<script src="/static/js/demo/peity-demo.min.js"></script>
+		<script src="/static/js/myJS/index.js"></script>
+		<script th:inline="javascript">
+			// 查询
+			$('#findBtn').click(function () {
+				// 发送GET异步请求
+				$.ajax({
+					type: 'POST',
+					url: '/admin/select', // 请求路径
+					data: {
+						'search': $('#search').val()
+					},
+					success: function (data) {
+						// 局部刷新数据显示部分的div
+						$('#adminTable').html(data)
+					},
+					error: function (err) {
+						console.log(err)
+						alert('操作失败，请刷新重新尝试！')
+					}
+				})
+			})
+		</script>
+	</body>
+</html>

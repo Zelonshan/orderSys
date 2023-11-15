@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<!--suppress ALL-->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="author" content="Yuan-Programmer" />
+
+		<title>后台管理</title>
+		<link rel="shortcut icon" href="../static/favicon.ico">
+		<link href="/static/css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+		<link href="/static/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+		<link href="/static/css/plugins/iCheck/custom.css" rel="stylesheet">
+		<link href="/static/css/animate.min.css" rel="stylesheet">
+		<link href="/static/css/style.min862f.css?v=4.1.0" rel="stylesheet">
+
+	</head>
+	<body class="gray-bg">
+		<div class="wrapper wrapper-content animated fadeInRight">
+			<div class="row">
+				<div class="col-sm-6">
+					<div class="ibox float-e-margins">
+						<div class="ibox-title">
+							<h5>桌号管理</h5>
+							<div class="ibox-tools">
+								<button id="addUserBtn" class="btn btn-xs btn-rounded btn-primary"><i class="fa fa-plus"></i> 添加</button>
+							</div>
+						</div>
+						<div class="ibox-content">
+							<div id="tablesTable" th:fragment="tablesTable">
+								<table class="footable table table-stripped toggle-arrow-tiny">
+									<thead>
+										<tr>
+											<th>编号</th>
+											<th>菜桌名</th>
+											<th>状态</th>
+											<th>详情</th>
+
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="tables: ${tables_list}">
+											<td th:text="${tables.id}">1</td>
+											<td th:text="${tables.name}">ydw</td>
+											<td th:switch="${tables.state}">
+												<p th:case="'0'">无人</p>
+												<p th:case="'1'">有人</p>
+											</td>
+											<td th:text="${tables.description}"></td>
+											<td style="width: 50px;">
+												<button th:onclick="updateBtn([[${tables.id}]],[[${tables.name}]],[[${tables.state}]],[[${tables.description}]])" class="updateUserBtn btn btn-warning btn-xs btn-rounded" type="button">
+													<i class="fa fa-edit"></i> 编辑
+												</button>
+											</td>
+											<td style="width: 50px;">
+												<button th:onclick="|deleteBtn(${tables.id})|" class="deleteUserBtn btn btn-danger btn-xs btn-rounded" type="button">
+													<i class="fa fa-trash"></i> 删除
+												</button>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 添加桌号的弹出框 -->
+		<div id="modal-form-add" class="modal fade" aria-hidden="true">
+		    <div class="modal-dialog">
+		        <div class="modal-content">
+		            <div class="modal-body">
+		                <div class="row">
+		                    <div class="col-sm-12 b-r">
+		                        <div class="ibox-title">
+		                            <h5>添加新的桌号</h5>
+		                        </div>
+		                        <div id="addForm" class="ibox-content" >
+		                            <form class="form-horizontal">
+		                                <div class="form-group">
+		                                    <label class="col-sm-3 control-label">菜桌名：</label>
+		                                    <div class="col-sm-8">
+		                                        <input id="addName" type="text" placeholder="菜桌名" class="form-control" maxlength="20">
+		                                    </div>
+		                                </div>
+										<div class="form-group">
+											<label class="col-sm-3 control-label">状态：</label>
+											<div class="col-sm-8">
+												<select id="addState" name="addState" class="form-control" >
+													<option value="">--请选择--</option>
+													<option th:selected="${addState=='0'}" value="0">无人</option>
+													<option th:selected="${addState=='1'}" value="1">有人</option>
+												</select>
+											</div>
+										</div>
+										<div class="form-group">
+											<label class="col-sm-3 control-label">详情：</label>
+											<div class="col-sm-8">
+												<input id="addDescription" type="text" placeholder="详情" class="form-control" maxlength="20">
+											</div>
+										</div>
+		                                <div>
+		                                    <button id="addSubmitBtn" class="btn btn-primary btn-primary pull-right m-t-n-xs" type="button"><i class="fa fa-check"></i>&nbsp;提交
+		                                    </button>
+		                                </div>
+		                            </form>
+		                        </div>
+		                    </div>
+		                </div>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+		
+		<!-- 修改桌号的弹出框 -->
+		<div id="modal-form-update" class="modal fade" aria-hidden="true">
+		    <div class="modal-dialog">
+		        <div class="modal-content">
+		            <div class="modal-body">
+		                <div class="row">
+		                    <div class="col-sm-12 b-r">
+		                        <div class="ibox-title">
+		                            <h5>修改桌号</h5>
+		                        </div>
+		                        <div class="ibox-content">
+		                            <form id="updateForm" class="form-horizontal">
+										<div class="form-group">
+											<label class="col-sm-3 control-label">编号：</label>
+											<div class="col-sm-8">
+												<input id="updateId" type="text" placeholder="编号" class="form-control" disabled>
+											</div>
+										</div>
+										<div class="form-group">
+											<label class="col-sm-3 control-label">桌号：</label>
+											<div class="col-sm-8">
+												<input id="updateName" type="text" placeholder="桌号" class="form-control" maxlength="20">
+											</div>
+										</div>
+		                                <div class="form-group">
+		                                    <label class="col-sm-3 control-label">状态：</label>
+		                                    <div class="col-sm-8">
+												<select id="updateState" name="updateState" class="form-control" >
+													<option value="">--请选择--</option>
+													<option th:selected="${updateState=='0'}" value="0">有人</option>
+													<option th:selected="${updateState=='1'}" value="1">无人</option>
+												</select>
+		                                    </div>
+		                                </div>
+										<div class="form-group">
+											<label class="col-sm-3 control-label">详情：</label>
+											<div class="col-sm-8">
+												<input id="updateDescription" type="text" placeholder="详情" class="form-control" maxlength="10">
+											</div>
+										</div>
+		                                <div>
+		                                    <button id="updateSubmitBtn" class="btn btn-primary btn-primary pull-right m-t-n-xs" type="button"><i class="fa fa-check"></i>&nbsp;提交
+		                                    </button>
+		                                </div>
+		                            </form>
+		                        </div>
+		                    </div>
+		                </div>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+		<script src="/static/js/jquery.min.js?v=2.1.4"></script>
+		<script src="/static/js/bootstrap.min.js?v=3.3.6"></script>
+		<script src="/static/js/plugins/peity/jquery.peity.min.js"></script>
+		<script src="/static/js/content.min.js?v=1.0.0"></script>
+		<script src="/static/js/plugins/iCheck/icheck.min.js"></script>
+		<script src="/static/js/demo/peity-demo.min.js"></script>
+		<script src="/static/js/myJS/index.js"></script>
+		<script th:inline="javascript">
+			function deleteBtn(id) {
+				// 发送请求
+				$.ajax({
+					type: 'POST',
+					url: '/Table/delete',
+					data: {
+						'id': id // 编号
+					},
+					success: function (data) {
+						// 局部刷新
+						$('#tablesTable').html(data)
+					},
+					error: function (err) {
+						console.log(err)
+						alert("操作失败，请刷新重新尝试！")
+					}
+				})
+			}
+			// 点击修改按钮
+
+			function updateBtn(id, name, state, description) {
+				// 传递数据到弹出框
+				$('#modal-form-update').modal('show');
+				$('#updateId').val(id)
+				$('#updateName').val(name)
+				$('#updateState').val(state)
+				$('#updateDescription').val(description)
+			}
+			// 修改提交
+			$('#updateSubmitBtn').click(function () {
+				var id = $('#updateId').val()
+				var name = $('#updateName').val()
+				var state = $('#updateState').val()
+				var description = $('#updateDescription')
+
+				if (name.length ==0) {
+					alert('桌号不能为空')
+				}else if (state.length == 0){
+					alert('状态不能为空')
+				}else if (description.length == 0){
+					alert('详情不能为空')
+				}else {
+					$.ajax({
+						type: 'POST',
+						url: '/Table/update',
+						data: {
+							'id': id,
+							'name': name,
+							'state': state,
+							'description': description
+						},
+						success: function (data) {
+							// 关闭modal框
+							$('#modal-form-update').modal('hide')
+							// 清空modal框里上一次的数据
+							document.getElementById("updateForm").reset()
+							// 局部刷新
+							$('#tablesTable').html(data)
+						},
+						error: function (err) {
+							console.log(err)
+							alert('操作失败，请刷新重新尝试！')
+						}
+					})
+				}
+			})
+			// 添加
+			$('#addSubmitBtn').click(function () {
+				var name = $('#addName').val()
+				var state = $('#addState').val()
+				var description = $('#addDescription').val()
+
+				// 非空效验
+				if (name.length == 0) {
+					alert("用户名不能为空")
+				}else if (state.length == 0){
+					alert("状态不能为空")
+				}else if (description.length == 0){
+					alert("详情不能为空")
+				}else {
+					$.ajax({
+						type: 'POST',
+						url: '/Table/insert',
+						data: {
+							'name': name, //类名
+							'state': state ,//状态
+							"description": description //详情
+						},
+						success: function (data) {
+							// 关闭modal框
+							$('#modal-form-add').modal('hide')
+							// 清空modal框里上一次的数据
+							document.getElementById("addForm").reset()
+							// 局部刷新
+							$('#tablesTable').html(data)
+						},
+						error: function (err) {
+							console.log(err)
+							alert("操作失败，请刷新重新尝试！")
+						}
+					})
+				}
+			})
+		</script>
+	</body>
+</html>

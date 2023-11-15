@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<!--suppress ALL-->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Yuan-Programmer" />
+
+  <title>菜品管理</title>
+  <link rel="shortcut icon" href="../static/favicon.ico">
+  <link href="/static/css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+  <link href="/static/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+  <link href="/static/css/plugins/iCheck/custom.css" rel="stylesheet">
+  <link href="/static/css/animate.min.css" rel="stylesheet">
+  <link href="/static/css/style.min862f.css?v=4.1.0" rel="stylesheet">
+
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+  <div class="row">
+    <div style="width: 66%">
+      <div class="ibox float-e-margins">
+        <div class="ibox-title">
+          <h5>菜品管理</h5>
+          <div class="ibox-tools">
+            <button id="addFoodBtn" class="btn btn-xs btn-rounded btn-primary"><i class="fa fa-plus"></i> 添加</button>
+          </div>
+        </div>
+        <div class="ibox-content">
+          <div class="input-group">
+            <input id="search" type="text" placeholder="请输入关键词" class="input-sm form-control"> <span class="input-group-btn">
+							        <button id="findBtn" type="button" class="btn btn-sm btn-primary"><i class="fa fa-search"> 搜索</i> </button> </span>
+          </div>
+          <div id="foodTable" th:fragment="foodTable">
+            <table class="footable table table-stripped toggle-arrow-tiny">
+              <thead>
+              <tr>
+                <th>编号</th>
+                <th>菜品</th>
+                <th>描述</th>
+                <th>价格</th>
+                <th>图片</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:each="food: ${food_list}">
+                <td th:text="${food.id}">1</td>
+                <td th:text="${food.name}">ydw</td>
+                <td th:text="${food.describes}">123</td>
+                <td th:text="${food.price}"></td>
+                <td ><img th:src="@{/file/download?(filename=${food.getImg()})}" width="55px" height="55px"></td>
+                <td style="width: 50px;">
+                  <button th:onclick="updateBtn([[${food.id}]],[[${food.name}]],[[${food.describes}]],[[${food.price}]])" class="updateUserBtn btn btn-warning btn-xs btn-rounded" type="button">
+                    <i class="fa fa-edit"></i> 编辑
+                  </button>
+                </td>
+                <td style="width: 50px;">
+                  <button th:onclick="|deleteBtn(${food.id})|" class="deleteUserBtn btn btn-danger btn-xs btn-rounded" type="button">
+                    <i class="fa fa-trash"></i> 删除
+                  </button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 添加用户的弹出框 -->
+<div id="modal-form-add" class="modal fade" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-sm-12 b-r">
+            <div class="ibox-title">
+              <h5>添加新的菜品</h5>
+            </div>
+            <div id="addForm" class="ibox-content">
+              <form class="form-horizontal" id="loadFoods" enctype="multipart/form-data">
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">菜品：</label>
+                  <div class="col-sm-8">
+                    <input id="addFoodName" type="text" placeholder="菜品" class="form-control" maxlength="20" >
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">描述：</label>
+                  <div class="col-sm-8">
+                    <input id="addDescribe" type="text" placeholder="描述" class="form-control" maxlength="16" >
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">价格：</label>
+                  <div class="col-sm-8">
+                    <input id="addPrice" type="text" placeholder="价格" class="form-control" maxlength="10" >
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">图片：</label>
+                  <div class="col-sm-8">
+                    <input id="addImg" type="file" placeholder="图片" accept="image/png,image/jpeg" name="file" class="form-control" maxlength="16">
+                  </div>
+                </div>
+                <div>
+                  <button id="addSubmitBtn"  class="btn btn-primary btn-primary pull-right m-t-n-xs" type="button"><i class="fa fa-check"></i>&nbsp;提交
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 修改用户的弹出框 -->
+<div id="modal-form-update" class="modal fade" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-sm-12 b-r">
+            <div class="ibox-title">
+              <h5>修改菜品信息</h5>
+            </div>
+            <div class="ibox-content">
+              <form id="updateForm" class="form-horizontal"  enctype="multipart/form-data" method="post">
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">编号：</label>
+                  <div class="col-sm-8">
+                    <input id="updateFoodId" type="text" placeholder="编号" class="form-control" disabled>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">菜品：</label>
+                  <div class="col-sm-8">
+                    <input id="updateFoodName" type="text" placeholder="菜品" class="form-control" maxlength="20" >
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">描述：</label>
+                  <div class="col-sm-8">
+                    <input id="updateDescribes" type="text" placeholder="描述" class="form-control" maxlength="16" name="describles">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">价格：</label>
+                  <div class="col-sm-8">
+                    <input id="updatePrice" type="text" placeholder="价格" class="form-control" maxlength="16">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">图片：</label>
+                  <div class="col-sm-8">
+                    <input id="updateImg" type="file" placeholder="图片" class="form-control" maxlength="16" accept="image/png,image/jpeg" name="file">
+                  </div>
+                </div>
+                <div>
+                  <button id="updateSubmitBtn" class="btn btn-primary btn-primary pull-right m-t-n-xs" type="button"><i class="fa fa-check"></i>&nbsp;提交
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/static/js/jquery.min.js?v=2.1.4"></script>
+<script src="/static/js/bootstrap.min.js?v=3.3.6"></script>
+<script src="/static/js/plugins/peity/jquery.peity.min.js"></script>
+<script src="/static/js/content.min.js?v=1.0.0"></script>
+<script src="/static/js/plugins/iCheck/icheck.min.js"></script>
+<script src="/static/js/demo/peity-demo.min.js"></script>
+<script src="/static/js/myJS/index.js?randomId=<%=Math.random()%>"></script>
+<script th:inline="javascript">
+  function deleteBtn(id) {
+    // 发送请求
+    $.ajax({
+      type: 'POST',
+      url: '/foods/delete',
+      data: {
+        'id': id // 编号
+      },
+      success: function (data) {
+        // 局部刷新
+        $('#foodTable').html(data)
+      },
+      error: function (err) {
+        console.log(err)
+        alert("操作失败，请刷新重新尝试！")
+      }
+    })
+  }
+  // 点击修改按钮
+
+  function updateBtn(id, name, describes, price) {
+    // 传递数据到弹出框
+    $('#modal-form-update').modal('show');
+    $('#updateFoodId').val(id)
+    $('#updateFoodName').val(name)
+    $('#updateDescribes').val(describes)
+    $('#updatePrice').val(price)
+  }
+  // 修改提交
+  $('#updateSubmitBtn').click(function () {
+    var id = $('#updateFoodId').val()
+    var name = $('#updateFoodName').val()
+    var describes = $("#updateDescribes").val()
+    var price = $("#updatePrice").val()
+    var formData= new FormData($("#updateForm")[0]);
+    formData.append('id',id);
+    formData.append('name',name);
+    formData.append('describes',describes);
+    formData.append('price',price);
+    if (name.length ==0) {
+      alert('菜品名不能为空')
+    }else if (describes.length == 0) {
+      alert('描述不能为空')
+    }else if(price.length == 0){
+      alert('价格不能为空')
+    }else{
+      $.ajax({
+        type: 'POST',
+        url: '/foods/update',
+        data: formData,
+        processData: false, //因为data值是FormData对象，不需要对数据做处理。
+        contentType: false,//不指定提交数据类型
+        success: function (data) {
+          // 关闭modal框
+          $('#modal-form-update').modal('hide')
+          // 清空modal框里上一次的数据
+          document.getElementById("updateForm").reset()
+          // 局部刷新
+          $('#foodTable').html(data)
+        },
+        error: function (err) {
+          console.log(err)
+          alert('操作失败，请刷新重新尝试！')
+        }
+      })
+    }
+  })
+  // 查询
+  $('#findBtn').click(function () {
+    // 发送GET异步请求
+    $.ajax({
+      type: 'POST',
+      url: '/foods/select', // 请求路径
+      data: {
+        'search': $('#search').val()
+      },
+      success: function (data) {
+        // 局部刷新数据显示部分的div
+        $('#foodTable').html(data)
+      },
+      error: function (err) {
+        console.log(err)
+        alert('操作失败，请刷新重新尝试！')
+      }
+    })
+  })
+
+  //添加图片
+  $('#addSubmitBtn').click(function (){
+    var formData=new FormData($("#loadFoods")[0]);
+    formData.append('name',$("#addFoodName").val());
+    formData.append('describes',$("#addDescribe").val());
+    formData.append('price',$("#addPrice").val());
+    $.ajax({
+      type:"post",
+      url:"/foods/insert",
+      data:formData,
+      processData: false, //因为data值是FormData对象，不需要对数据做处理。
+      contentType: false,//不指定提交数据类型
+      //dataType: 'json',
+      success:function (data) {
+        // 局部刷新
+        $('#foodTable').html(data)
+      },
+      error: function (err) {
+        console.log(err)
+        alert('操作失败，请刷新重新尝试！')
+      }
+    })
+  })
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<!--suppress ALL-->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="author" content="Yuan-Programmer" />
+
+		<title>后台管理</title>
+		<link rel="shortcut icon" href="../static/favicon.ico">
+		<link href="/static/css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
+		<link href="/static/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+		<link href="/static/css/plugins/iCheck/custom.css" rel="stylesheet">
+		<link href="/static/css/animate.min.css" rel="stylesheet">
+		<link href="/static/css/style.min862f.css?v=4.1.0" rel="stylesheet">
+
+	</head>
+	<body class="gray-bg">
+		<div class="wrapper wrapper-content animated fadeInRight">
+			<div class="row">
+				<div class="col-sm-6">
+					<div class="ibox float-e-margins">
+						<div class="ibox-title">
+							<h5>微信广告图片管理</h5>
+							<div class="ibox-tools">
+								<button id="addUserBtn" class="btn btn-xs btn-rounded btn-primary"><i class="fa fa-plus"></i> 添加</button>
+							</div>
+						</div>
+						<div class="ibox-content">
+							<div class="input-group">
+							    <input id="search" type="text" placeholder="请输入关键词" class="input-sm form-control"> <span class="input-group-btn">
+							        <button id="findBtn" type="button" class="btn btn-sm btn-primary"><i class="fa fa-search"> 搜索</i> </button> </span>
+							</div>
+							<div id="imgsTable" th:fragment="imgsTable">
+								<table class="footable table table-stripped toggle-arrow-tiny">
+									<thead>
+										<tr>
+											<th>编号</th>
+											<th>图片</th>
+											<th>位置</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="adsImgs: ${adsImgs_list}">
+											<td th:text="${adsImgs.id}">1</td>
+											<td ><img th:src="@{/file/download1?(filename=${adsImgs.getSrc()})}" width="200px" height="150px"></td>
+											<td th:switch="${adsImgs.types}">
+												<p th:case="0">顶部</p>
+												<p th:case="1">中部</p>
+												<p th:case="2">底部</p>
+											</td>
+											<td style="width: 50px;">
+												<button th:onclick="updateBtn([[${adsImgs.id}]],[[${adsImgs.types}]])" class="updateUserBtn btn btn-warning btn-xs btn-rounded" type="button">
+													<i class="fa fa-edit"></i> 修改
+												</button>
+											</td>
+											<td style="width: 50px;">
+												<button th:onclick="|deleteBtn(${adsImgs.id})|" class="deleteUserBtn btn btn-danger btn-xs btn-rounded" type="button">
+													<i class="fa fa-trash"></i> 删除
+												</button>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 添加用户的弹出框 -->
+		<div id="modal-form-add" class="modal fade" aria-hidden="true">
+		    <div class="modal-dialog">
+		        <div class="modal-content">
+		            <div class="modal-body">
+		                <div class="row">
+		                    <div class="col-sm-12 b-r">
+		                        <div class="ibox-title">
+		                            <h5>添加新的微信广告图片</h5>
+		                        </div>
+		                        <div id="addForm" class="ibox-content">
+		                            <form class="form-horizontal" enctype="multipart/form-data" id="addAds">
+		                                <div class="form-group">
+		                                    <label class="col-sm-3 control-label">图片：</label>
+		                                    <div class="col-sm-8">
+												<input id="addImg" type="file" placeholder="图片" accept="image/png,image/jpeg" name="file" class="form-control" maxlength="16">
+		                                    </div>
+		                                </div>
+										<div class="form-group">
+										    <label class="col-sm-3 control-label">位置：</label>
+										    <div class="col-sm-8">
+										        <input id="addTypes" type="text" placeholder="输入0代表轮播图输入1代表中部输入2代表底部" class="form-control" maxlength="16">
+										    </div>
+										</div>
+		                                <div>
+		                                    <button id="addSubmitBtn" class="btn btn-primary btn-primary pull-right m-t-n-xs" type="button"><i class="fa fa-check"></i>&nbsp;提交
+		                                    </button>
+		                                </div>
+		                            </form>
+		                        </div>
+		                    </div>
+		                </div>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+		
+		<!-- 修改用户的弹出框 -->
+		<div id="modal-form-update" class="modal fade" aria-hidden="true">
+		    <div class="modal-dialog">
+		        <div class="modal-content">
+		            <div class="modal-body">
+		                <div class="row">
+		                    <div class="col-sm-12 b-r">
+		                        <div class="ibox-title">
+		                            <h5>修改微信广告图片</h5>
+		                        </div>
+		                        <div class="ibox-content">
+		                            <form id="updateForm" class="form-horizontal" enctype="multipart/form-data" method="post">
+										<div class="form-group">
+											<label class="col-sm-3 control-label">编号：</label>
+											<div class="col-sm-8">
+												<input id="updateImgsId" type="text" placeholder="编号" class="form-control" disabled>
+											</div>
+										</div>
+		                                <div class="form-group">
+		                                    <label class="col-sm-3 control-label">图片：</label>
+		                                    <div class="col-sm-8">
+												<input id="updateImg" type="file" placeholder="图片" class="form-control" maxlength="16" accept="image/png,image/jpeg" name="file">
+		                                    </div>
+		                                </div>
+										<div class="form-group">
+										    <label class="col-sm-3 control-label">位置：</label>
+										    <div class="col-sm-8">
+										        <input id="updateTypes" type="text" placeholder="位置" class="form-control" maxlength="6">
+										    </div>
+										</div>
+		                                <div>
+		                                    <button id="updateSubmitBtn" class="btn btn-primary btn-primary pull-right m-t-n-xs" type="button"><i class="fa fa-check"></i>&nbsp;提交
+		                                    </button>
+		                                </div>
+		                            </form>
+		                        </div>
+		                    </div>
+		                </div>
+		            </div>
+		        </div>
+		    </div>
+		</div>
+		<script src="/static/js/jquery.min.js?v=2.1.4"></script>
+		<script src="/static/js/bootstrap.min.js?v=3.3.6"></script>
+		<script src="/static/js/plugins/peity/jquery.peity.min.js"></script>
+		<script src="/static/js/content.min.js?v=1.0.0"></script>
+		<script src="/static/js/plugins/iCheck/icheck.min.js"></script>
+		<script src="/static/js/demo/peity-demo.min.js"></script>
+		<script src="/static/js/myJS/index.js"></script>
+		<script th:inline="javascript">
+			function deleteBtn(id) {
+				// 发送请求
+				$.ajax({
+					type: 'POST',
+					url: '/wxAdsImgs/delete',
+					data: {
+						'id': id // 编号
+					},
+					success: function (data) {
+						// 局部刷新
+						$('#imgsTable').html(data)
+					},
+					error: function (err) {
+						console.log(err)
+						alert("操作失败，请刷新重新尝试！")
+					}
+				})
+			}
+			// 点击修改按钮
+
+			function updateBtn(id, types) {
+				// 传递数据到弹出框
+				$('#modal-form-update').modal('show');
+				$('#updateImgsId').val(id)
+				$('#updateTypes').val(types)
+			}
+			// 修改提交
+			$('#updateSubmitBtn').click(function () {
+				var id = $('#updateImgsId').val()
+				var types = $('#updateTypes').val()
+				var formData= new FormData($("#updateForm")[0]);
+				formData.append('id',id);
+				formData.append('types',types);
+				if (types.length ==0) {
+					alert('位置不能为空')
+				}else{
+					$.ajax({
+						type: 'POST',
+						url: '/wxAdsImgs/update',
+						data: formData,
+						processData: false, //因为data值是FormData对象，不需要对数据做处理。
+						contentType: false,//不指定提交数据类型
+						success: function (data) {
+							// 关闭modal框
+							$('#modal-form-update').modal('hide')
+							// 清空modal框里上一次的数据
+							document.getElementById("updateForm").reset()
+							// 局部刷新
+							$('#imgsTable').html(data)
+						},
+						error: function (err) {
+							console.log(err)
+							alert('操作失败，请刷新重新尝试！')
+						}
+					})
+				}
+			})
+			// 查询
+			$('#findBtn').click(function () {
+				// 发送GET异步请求
+				$.ajax({
+					type: 'POST',
+					url: '/wxAdsImgs/select', // 请求路径
+					data: {
+						'search': $('#search').val()
+					},
+					success: function (data) {
+						// 局部刷新数据显示部分的div
+						$('#imgsTable').html(data)
+					},
+					error: function (err) {
+						console.log(err)
+						alert('操作失败，请刷新重新尝试！')
+					}
+				})
+			})
+
+			//添加图片
+			$('#addSubmitBtn').click(function (){
+				var formData=new FormData($("#addAds")[0]);
+				formData.append('types',$("#addTypes").val());
+				$.ajax({
+					type:"post",
+					url:"/wxAdsImgs/insert",
+					data:formData,
+					processData: false, //因为data值是FormData对象，不需要对数据做处理。
+					contentType: false,//不指定提交数据类型
+					//dataType: 'json',
+					success:function (data) {
+						// 局部刷新
+						$('#imgsTable').html(data)
+					},
+					error: function (err) {
+						console.log(err)
+						alert('操作失败，请刷新重新尝试！')
+					}
+				})
+			})
+		</script>
+	</body>
+</html>
